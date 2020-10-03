@@ -1,0 +1,49 @@
+{
+    "name": "fkupper/module-dynamic-snapshots",
+    "description": "Dynamic content shapshot testing for Codeception",
+    "keywords": [
+        "codeception",
+        "snapshot"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fernando Küpper Cardoso",
+            "email": "fernando@kupper.com.br"
+        }
+    ],
+    "minimum-stability": "RC",
+    "require": {
+        "php": ">=7.2 <8.0",
+        "codeception/codeception": "^4.0",
+        "codeception/module-asserts": "^1.0.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.5",
+        "vimeo/psalm": "^3.16",
+        "mockery/mockery": "^1.4"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    },
+    "config": {
+        "classmap-authoritative": true
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@analyze",
+            "@test-build",
+            "@test"
+        ],
+        "analyze": "psalm --output-format=console --find-dead-code --show-info=false",
+        "set-baseline": "psalm --find-dead-code --set-baseline=psalm-baseline.xml",
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
+        "test-build": "codecept build",
+        "test": "codecept --colors run -v"
+    }
+}
