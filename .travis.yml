@@ -25,5 +25,4 @@ cache:
         - $(composer config cache-files-dir)
 
 after_success:
-    - composer cp-clover
-    - travis_retry php vendor/bin/php-coveralls -v
+    - composer report-coverage

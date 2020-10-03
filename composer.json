@@ -38,7 +38,8 @@
             "@cs-check",
             "@analyze",
             "@test-build",
-            "@test-coverage"
+            "@test-coverage",
+            "@report-coverage"
         ],
         "analyze": "psalm --output-format=console --find-dead-code --show-info=false",
         "set-baseline": "psalm --find-dead-code --set-baseline=psalm-baseline.xml",
@@ -47,6 +48,6 @@
         "test-build": "codecept build",
         "test": "codecept --colors run -v",
         "test-coverage": "codecept --colors run -v --coverage-xml clover.xml",
-        "cp-clover": "cp ./tests/_output/clover.xml ./clover.xml"
+        "report-coverage": "php-coveralls -v"
     }
 }
