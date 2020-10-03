@@ -7,3 +7,7 @@ paths:
     output: tests/_output
     support: tests/_support
     data: tests/_data
+coverage:
+    enabled: true
+    include:
+        - src/*

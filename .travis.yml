@@ -4,13 +4,12 @@ php:
     - 7.2
     - 7.3
     - 7.4
-before_install:
-    - phpenv config-rm xdebug.ini || true
+    - 8.0
 
 install:
-  - if [[ "$DEPS" = 'high' ]]; then travis_retry composer --no-interaction --no-suggest update; fi
-  - if [[ "$DEPS" = 'low' ]]; then travis_retry composer --no-interaction --no-suggest --prefer-lowest --prefer-stable update; fi
-  - if [[ "$DEPS" = 'stable' ]]; then travis_retry composer --no-interaction --no-suggest --prefer-stable update; fi
+    - if [[ "$DEPS" = 'high' ]]; then travis_retry composer --no-interaction --no-suggest update; fi
+    - if [[ "$DEPS" = 'low' ]]; then travis_retry composer --no-interaction --no-suggest --prefer-lowest --prefer-stable update; fi
+    - if [[ "$DEPS" = 'stable' ]]; then travis_retry composer --no-interaction --no-suggest --prefer-stable update; fi
 
 script: composer check
 
@@ -20,5 +19,9 @@ env:
         - DEPS=high
         - DEPS=stable
 cache:
-  directories:
-    - $(composer config cache-files-dir)
+    directories:
+        - $(composer config cache-files-dir)
+
+after_success:
+    - composer cp-clover
+    - travis_retry php vendor/bin/php-coveralls -v
