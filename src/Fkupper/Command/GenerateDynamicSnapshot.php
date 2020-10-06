@@ -1,4 +1,5 @@
 <?php
+
 namespace Fkupper\Command;
 
 use Codeception\Command\Shared\Config;

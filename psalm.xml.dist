@@ -7,6 +7,6 @@
     errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
-        <directory name="src"/>
+        <directory name="src/Fkupper/Codeception"/>
     </projectFiles>
 </psalm>

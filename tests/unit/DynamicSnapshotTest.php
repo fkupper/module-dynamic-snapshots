@@ -1,15 +1,15 @@
 <?php
 
 use Codeception\Test\Unit;
-use Codeception\DynamicSnapshot;
+use Fkupper\Codeception\DynamicSnapshot;
 
 class DynamicSnapshotTest extends Unit
 {
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::setWrappers
-     * @covers \Codeception\DynamicSnapshot::getLeftWrapper
-     * @covers \Codeception\DynamicSnapshot::getRightWrapper
+     * @covers \Fkupper\Codeception\DynamicSnapshot::setWrappers
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getLeftWrapper
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getRightWrapper
      */
     public function canSetWrappers()
     {
@@ -21,8 +21,8 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::getLeftWrapper
-     * @covers \Codeception\DynamicSnapshot::getRightWrapper
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getLeftWrapper
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getRightWrapper
      */
     public function haveDefaultWrappers()
     {
@@ -33,8 +33,8 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::shouldAllowTrailingSpaces
-     * @covers \Codeception\DynamicSnapshot::getAllowTrailingSpaces
+     * @covers \Fkupper\Codeception\DynamicSnapshot::shouldAllowTrailingSpaces
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getAllowTrailingSpaces
      */
     public function canAllowTrailingSpaces()
     {
@@ -46,8 +46,8 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::shouldAllowSpaceSequences
-     * @covers \Codeception\DynamicSnapshot::getAllowSpaceSequences
+     * @covers \Fkupper\Codeception\DynamicSnapshot::shouldAllowSpaceSequences
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getAllowSpaceSequences
      */
     public function canAllowSpaceSequences()
     {
@@ -59,7 +59,7 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::wrapAndQuote
+     * @covers \Fkupper\Codeception\DynamicSnapshot::wrapAndQuote
      */
     public function canWrapAndQuote()
     {
@@ -74,7 +74,7 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::quoteAndWrap
+     * @covers \Fkupper\Codeception\DynamicSnapshot::quoteAndWrap
      */
     public function canQuoteAndWrap()
     {
@@ -89,7 +89,7 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::cleanContent
+     * @covers \Fkupper\Codeception\DynamicSnapshot::cleanContent
      */
     public function canCleanContentSpaceSequence()
     {
@@ -112,7 +112,7 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::cleanContent
+     * @covers \Fkupper\Codeception\DynamicSnapshot::cleanContent
      */
     public function canCleanContentTrailingSpaces()
     {
@@ -135,7 +135,7 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
-     * @covers \Codeception\DynamicSnapshot::cleanContent
+     * @covers \Fkupper\Codeception\DynamicSnapshot::cleanContent
      */
     public function canCleanContent()
     {

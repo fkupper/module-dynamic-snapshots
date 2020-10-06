@@ -30,9 +30,6 @@
             "src/"
         ]
     },
-    "config": {
-        "classmap-authoritative": true
-    },
     "scripts": {
         "check": [
             "@cs-check",

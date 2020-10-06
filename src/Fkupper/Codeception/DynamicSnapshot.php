@@ -1,8 +1,9 @@
 <?php
 
-namespace Codeception;
+namespace Fkupper\Codeception;
 
 use Codeception\Exception\ContentNotFound;
+use Codeception\Snapshot;
 
 abstract class DynamicSnapshot extends Snapshot
 {

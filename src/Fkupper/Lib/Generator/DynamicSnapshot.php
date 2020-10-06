@@ -1,4 +1,5 @@
 <?php
+
 namespace Fkupper\Lib\Generator;
 
 use Codeception\Lib\Generator\Snapshot;
