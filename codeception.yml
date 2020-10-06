@@ -11,3 +11,5 @@ coverage:
     enabled: true
     include:
         - src/*
+extensions:
+    commands: [Fkupper\Command\GenerateDynamicSnapshot]
