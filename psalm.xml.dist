@@ -7,9 +7,10 @@
     errorBaseline="psalm-baseline.xml"
 >
     <projectFiles>
+        <ignoreFiles>
+            <directory name="vendor"/>
+        </ignoreFiles>
         <directory name="src/Fkupper/Codeception"/>
     </projectFiles>
-    <ignoreFiles>
-        <directory name="vendor"/>
-    </ignoreFiles>
+    
 </psalm>
