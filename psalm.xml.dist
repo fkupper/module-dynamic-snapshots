@@ -9,4 +9,7 @@
     <projectFiles>
         <directory name="src/Fkupper/Codeception"/>
     </projectFiles>
+    <ignoreFiles>
+        <directory name="vendor"/>
+    </ignoreFiles>
 </psalm>
