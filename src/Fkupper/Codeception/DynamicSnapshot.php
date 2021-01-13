@@ -201,13 +201,19 @@ abstract class DynamicSnapshot extends Snapshot
     }
 
     /**
-     * Replaces the real values in the snpashot by the keys.
+     * Replaces the real values in the snapshot by the keys.
      *
      * @return void
      */
     protected function replaceRealValues(): void
     {
-        if (count($this->substitutions) !== count(array_filter($this->substitutions))) {
+        $actual_substitutions = array_filter(
+            $this->substitutions,
+            function ($value) {
+                return $value !== null;
+            }
+        );
+        if (count($this->substitutions) !== count($actual_substitutions)) {
             $this->fail('Error while saving snapshot: one or more substitutions is empty.');
         }
 
