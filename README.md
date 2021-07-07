@@ -61,7 +61,7 @@ For example, if you want to test a XML API response containing static data and v
 </xml>
 ```
 
-The property `"appVersion"` can change anytime and to avoid updating it every time, use `setSubstitutions`:
+The property `"appVersion"` can change anytime and to avoid updating it every time, use `setSubstitutions` method to replace it with a string (or a value that can be casted to string) of your choice:
 
 ```php
 class FooSnapshot extends DynamicSnapshot
