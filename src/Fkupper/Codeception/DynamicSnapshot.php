@@ -4,6 +4,7 @@ namespace Fkupper\Codeception;
 
 use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
+use InvalidArgumentException;
 
 abstract class DynamicSnapshot extends Snapshot
 {
@@ -74,7 +75,13 @@ abstract class DynamicSnapshot extends Snapshot
     public function setSubstitutions(array $substitutions): void
     {
         foreach ($substitutions as $key => $value) {
-            $this->substitutions[$this->substitutionPrefix . $key] = $value;
+            if (!is_scalar($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+                throw new InvalidArgumentException(
+                    'Substitutions can only be string values or values that can be casted to string. ' .
+                    "You provided substitution `$key` of type " . getType($value)
+                );
+            }
+            $this->substitutions[$this->substitutionPrefix . $key] = (string)$value;
         }
     }
 
@@ -207,13 +214,7 @@ abstract class DynamicSnapshot extends Snapshot
      */
     protected function replaceRealValues(): void
     {
-        $actual_substitutions = array_filter(
-            $this->substitutions,
-            function ($value) {
-                return $value !== null;
-            }
-        );
-        if (count($this->substitutions) !== count($actual_substitutions)) {
+        if (count($this->substitutions) !== count(array_filter($this->substitutions))) {
             $this->fail('Error while saving snapshot: one or more substitutions is empty.');
         }
 
