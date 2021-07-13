@@ -4,6 +4,7 @@ php:
     - 7.2
     - 7.3
     - 7.4
+    - 8.0
 
 install:
     - if [[ "$DEPS" = 'high' ]]; then travis_retry composer --no-interaction --no-suggest update; fi
