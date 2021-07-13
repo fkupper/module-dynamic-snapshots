@@ -69,7 +69,7 @@ abstract class DynamicSnapshot extends Snapshot
      * Eg:
      * ['user_id' => '99', 'some_dynamic_path' => '/foo/path/123/']
      *
-     * @param array<string,string> $substitutions
+     * @param array<string,scalar|object> $substitutions
      * @return void
      */
     public function setSubstitutions(array $substitutions): void
