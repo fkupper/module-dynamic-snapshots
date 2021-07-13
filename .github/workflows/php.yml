@@ -32,4 +32,16 @@ jobs:
     - name: Run tests
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_FLAG_NAME: run-${{ matrix.php }}
+        COVERALLS_PARALLEL: true
       run: composer check
+
+  finish:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Coveralls Finished
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
