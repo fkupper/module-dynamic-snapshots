@@ -155,4 +155,61 @@ class DynamicSnapshotTest extends Unit
             $mock->cleanContent($value)
         );
     }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::setSubstitutions
+     * @dataProvider provideInvalidSubstitutions
+     */
+    public function itWillNotAllowUnsupportedSubstitutions(array $substitutions)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Substitutions can only be string values or values that can be casted to string. ' .
+            'You provided substitution `element` of type ' . getType($substitutions['element'])
+        );
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $mock->setSubstitutions($substitutions);
+    }
+
+    public function provideInvalidSubstitutions()
+    {
+        return [
+            'object_with_no_to_string_method' => [[
+                'element' => new stdClass(),
+            ]],
+            'nested_array' => [[
+                'element' => [],
+            ]],
+        ];
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::setSubstitutions
+     * @dataProvider provideValidSubstitutions
+     */
+    public function itWillAllowSupportedSubstitutions(array $substitutions)
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $mock->setSubstitutions($substitutions);
+    }
+
+    public function provideValidSubstitutions()
+    {
+        return [
+            'string' => [[
+                'element' => 'John Snow',
+            ]],
+            'int' => [[
+                'element' => 2,
+            ]],
+        ];
+    }
 }
