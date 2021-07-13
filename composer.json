@@ -15,7 +15,7 @@
     ],
     "minimum-stability": "RC",
     "require": {
-        "php": ">=7.2 <= 8.0",
+        "php": "^7.2 || ^7.3 || ^7.4 || ^8.0",
         "codeception/codeception": "^4.0",
         "codeception/module-asserts": "^1.0.0"
     },
