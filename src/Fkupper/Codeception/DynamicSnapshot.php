@@ -5,6 +5,10 @@ namespace Fkupper\Codeception;
 use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use InvalidArgumentException;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\ExpectationFailedException;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Throwable;
 
 abstract class DynamicSnapshot extends Snapshot
 {
@@ -236,6 +240,45 @@ abstract class DynamicSnapshot extends Snapshot
         $data = $this->cleanContent($data);
 
         return $data;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getSubstitutionsOutput()
+    {
+        $output = '';
+        try {
+            $substitutions = [];
+            foreach ($this->substitutions as $key => $value) {
+                $substitutions[str_replace($this->substitutionPrefix, '', $key)] = OutputFormatter::escape($value);
+            }
+            $output = 'Substitutions:' . PHP_EOL . print_r($substitutions, true);
+        } catch (Throwable $t) {
+            $output = 'Count not get substitutions output. Failed with error: ' . $t->getMessage();
+        } finally {
+            return PHP_EOL . PHP_EOL . $output . PHP_EOL;
+        }
+    }
+
+    /**
+     * Performs assertion for data sets
+     */
+    public function assert()
+    {
+        try {
+            parent::assert();
+        } catch (ExpectationFailedException $exception) {
+            if ($this->showDiff) {
+                $substitutionsOutput = $this->getSubstitutionsOutput();
+                $message = $exception->getMessage() . $substitutionsOutput;
+                throw new ExpectationFailedException(
+                    $message,
+                    $exception->getComparisonFailure(),
+                    $exception,
+                );
+            }
+        }
     }
 
     /**

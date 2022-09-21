@@ -2,6 +2,7 @@
 
 use Codeception\Test\Unit;
 use Fkupper\Codeception\DynamicSnapshot;
+use PHPUnit\Framework\ExpectationFailedException;
 
 class DynamicSnapshotTest extends Unit
 {
@@ -211,5 +212,31 @@ class DynamicSnapshotTest extends Unit
                 'element' => 2,
             ]],
         ];
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getSubstitutionsOutput
+     */
+    public function itCanGetSubstitutionsOutput()
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $substitutions = [
+            'foo' => 'bar',
+            'baz' => 'asd',
+            'int' => 2,
+            'float' => 2.5,
+        ];
+        $mock->setSubstitutions($substitutions);
+        $actualOutput = $mock->getSubstitutionsOutput();
+        $expectedOutput = "\n\nSubstitutions:\n" . print_r($substitutions, true) . "\n";
+
+        $this->assertSame(
+            $expectedOutput,
+            $actualOutput
+        );
     }
 }
