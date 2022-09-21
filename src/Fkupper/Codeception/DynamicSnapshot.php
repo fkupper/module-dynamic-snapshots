@@ -242,10 +242,7 @@ abstract class DynamicSnapshot extends Snapshot
         return $data;
     }
 
-    /**
-     * @return string
-     */
-    protected function getSubstitutionsOutput()
+    protected function getSubstitutionsOutput(): string
     {
         $output = '';
         try {
@@ -263,6 +260,7 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Performs assertion for data sets
+     * @return void
      */
     public function assert()
     {
