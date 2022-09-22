@@ -275,6 +275,32 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getStrictSubstitutionsOutput
+     */
+    public function itCanGetStrictSubstitutionsOutput()
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $substitutions = [
+            'foo' => 'bar',
+            'baz' => 'asd',
+            'int' => 2,
+            'float' => 2.5,
+        ];
+        $mock->setStrictSubstitutions($substitutions);
+        $actualOutput = $mock->getStrictSubstitutionsOutput();
+        $expectedOutput = "\n\nStrict substitutions:\n" . print_r($substitutions, true) . "\n";
+
+        $this->assertSame(
+            $expectedOutput,
+            $actualOutput
+        );
+    }
+
+    /**
+     * @test
      * @covers \Fkupper\Codeception\DynamicSnapshot::getSubstitutionKey
      */
     public function itCanGetSubstitutionKey()
@@ -293,6 +319,58 @@ class DynamicSnapshotTest extends Unit
         $this->assertSame(
             'snapshot_strict_foo',
             $actualStrictKey,
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::replaceRealValueWithPlaceholder
+     */
+    public function itCanReplaceRealValueWithPlaceholderWithoutBoundaries()
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $reflectionClass = new ReflectionClass($mock);
+        $property = $reflectionClass->getProperty('dataSet');
+        $property->setAccessible(true);
+        $property->setValue($mock, 'asdfoobarfooqwe');
+
+        $mock->replaceRealValueWithPlaceholder('foo', 'placeholder_for_foo');
+
+        $expectedDataSet = 'asd[placeholder_for_foo]bar[placeholder_for_foo]qwe';
+        $actualDataSet = $property->getValue($mock);
+
+        $this->assertSame(
+            $expectedDataSet,
+            $actualDataSet
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::replaceRealValueWithPlaceholder
+     */
+    public function itCanReplaceRealValueWithPlaceholderWithBoundaries()
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $reflectionClass = new ReflectionClass($mock);
+        $property = $reflectionClass->getProperty('dataSet');
+        $property->setAccessible(true);
+        $property->setValue($mock, 'asd=foo"bar foo&qwe foo');
+
+        $mock->replaceRealValueWithPlaceholder('foo', 'placeholder_for_foo', true);
+
+        $expectedDataSet = 'asd=[placeholder_for_foo]"bar [placeholder_for_foo]&qwe [placeholder_for_foo]';
+        $actualDataSet = $property->getValue($mock);
+
+        $this->assertSame(
+            $expectedDataSet,
+            $actualDataSet
         );
     }
 }
