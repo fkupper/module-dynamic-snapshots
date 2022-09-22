@@ -72,7 +72,7 @@ abstract class DynamicSnapshot extends Snapshot
                     "You provided substitution `$key` of type " . getType($value)
                 );
             }
-            $substitutionKey = $this->getSubstitutionKey((string)$key, strictSubstitutions: false);
+            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: false);
             $this->substitutions[$substitutionKey] = (string)$value;
         }
     }
@@ -83,7 +83,7 @@ abstract class DynamicSnapshot extends Snapshot
      * Strict substitutions are checked using boundaries in the regex.
      * Eg:
      * ['user_id' => 99, 'day_of_the_week' => 6]
-     * @param array<string,scalar|object> $strictSubstitutions
+     * @param array<string, scalar|object> $strictSubstitutions
      */
     public function setStrictSubstitutions(array $strictSubstitutions): void
     {
@@ -94,7 +94,7 @@ abstract class DynamicSnapshot extends Snapshot
                     "You provided substitution `$key` of type " . getType($value)
                 );
             }
-            $substitutionKey = $this->getSubstitutionKey((string)$key, strictSubstitutions: true);
+            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: true);
             $this->strictSubstitutions[$substitutionKey] = (string)$value;
         }
     }
@@ -223,12 +223,14 @@ abstract class DynamicSnapshot extends Snapshot
         return $data;
     }
 
-    protected function replaceRealValueWithPlaceholder(string $value, string $placeholder, bool $withBoundaries = false): void
-    {
+    protected function replaceRealValueWithPlaceholder(
+        string $value,
+        string $placeholder,
+        bool $withBoundaries = false
+    ): void {
         $value = preg_quote($value, '/');
         $placeholder = $this->quoteAndWrap($placeholder);
         $regex = $withBoundaries ? "/\b$value\b/" : "/$value/";
-        info(dump($regex));
         $this->dataSet = preg_replace($regex, $placeholder, $this->dataSet);
     }
 
@@ -301,7 +303,8 @@ abstract class DynamicSnapshot extends Snapshot
         try {
             $substitutions = [];
             foreach ($this->strictSubstitutions as $key => $value) {
-                $substitutions[str_replace($this->strictSubstitutionPrefix, '', $key)] = OutputFormatter::escape($value);
+                $substitutionKey = str_replace($this->strictSubstitutionPrefix, '', $key);
+                $substitutions[$substitutionKey] = OutputFormatter::escape($value);
             }
             $output = 'Strict substitutions:' . PHP_EOL . print_r($substitutions, true);
         } catch (Throwable $t) {
