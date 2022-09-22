@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="3.16@d03e5ef057d6adc656c0ff7e166c50b73b4f48f3">
+<files psalm-version="4.27.0@faf106e717c37b8c81721845dba9de3d8deed8ff">
   <file src="src/Fkupper/Codeception/DynamicSnapshot.php">
     <DocblockTypeContradiction occurrences="2">
       <code>is_object($value)</code>
-      <code>is_scalar($value)</code>
+      <code>is_object($value)</code>
     </DocblockTypeContradiction>
-    <MixedArgument occurrences="4">
+    <InternalClass occurrences="1"/>
+    <InternalMethod occurrences="3">
+      <code>getComparisonFailure</code>
+      <code>new ContentNotFound("Fetched dynamic snapshot is empty.")</code>
+    </InternalMethod>
+    <MixedArgument occurrences="6">
+      <code>$this-&gt;dataSet</code>
       <code>$this-&gt;dataSet</code>
       <code>$this-&gt;dataSet</code>
       <code>$this-&gt;dataSet</code>
       <code>$value</code>
+      <code>$value</code>
     </MixedArgument>
-    <RedundantConditionGivenDocblockType occurrences="4">
-      <code>!is_scalar($value) || (is_object($value) &amp;&amp; !method_exists($value, '__toString'))</code>
-      <code>$value !== null</code>
-      <code>is_scalar($value)</code>
-      <code>return $value !== null;</code>
-    </RedundantConditionGivenDocblockType>
     <UnusedClass occurrences="1">
       <code>DynamicSnapshot</code>
     </UnusedClass>

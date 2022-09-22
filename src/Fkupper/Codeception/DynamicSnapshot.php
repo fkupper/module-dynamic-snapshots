@@ -5,41 +5,31 @@ namespace Fkupper\Codeception;
 use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use InvalidArgumentException;
-use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Throwable;
 
 abstract class DynamicSnapshot extends Snapshot
 {
-    /** @var string */
-    protected $leftWrapper = '[';
+    protected string $leftWrapper = '[';
+    protected string $rightWrapper = ']';
+    protected string $substitutionPrefix = 'snapshot_';
+    protected string $strictSubstitutionPrefix = 'snapshot_strict_';
 
-    /** @var string */
-    protected $rightWrapper = ']';
-
-    /** @var string */
-    protected $substitutionPrefix = 'snapshot_';
+    protected bool $allowTrailingSpaces = false;
+    protected bool $allowSpaceSequences = false;
 
     /** @var array<string,string> */
-    protected $substitutions = [];
-
+    protected array $substitutions = [];
+    /** @var array<string,string> */
+    protected array $strictSubstitutions = [];
     /** @var array<string> */
-    protected $ignoredLinesPatters = [];
+    protected array $ignoredLinesPatters = [];
 
-    /** @var bool */
-    protected $allowTrailingSpaces = false;
-
-    /** @var bool */
-    protected $allowSpaceSequences = false;
 
     /**
      * Set what charaters will be used to wrap substitution keys.
      * Default is []
-     *
-     * @param string $leftWrapper = '['
-     * @param string $rightWrapper = ']'
-     * @return void
      */
     public function setWrappers(string $leftWrapper = '[', string $rightWrapper = ']'): void
     {
@@ -51,20 +41,19 @@ abstract class DynamicSnapshot extends Snapshot
         $this->rightWrapper = $rightWrapper;
     }
 
-    /**
-     * @return string
-     */
     protected function getLeftWrapper(): string
     {
         return $this->leftWrapper;
     }
 
-    /**
-     * @return string
-     */
     protected function getRightWrapper(): string
     {
         return $this->rightWrapper;
+    }
+
+    protected function getSubstitutionKey(string $key, bool $strictSubstitutions): string
+    {
+        return ($strictSubstitutions ? $this->strictSubstitutionPrefix : $this->substitutionPrefix) . $key;
     }
 
     /**
@@ -72,9 +61,7 @@ abstract class DynamicSnapshot extends Snapshot
      * replacement as the values.
      * Eg:
      * ['user_id' => '99', 'some_dynamic_path' => '/foo/path/123/']
-     *
      * @param array<string,scalar|object> $substitutions
-     * @return void
      */
     public function setSubstitutions(array $substitutions): void
     {
@@ -85,16 +72,37 @@ abstract class DynamicSnapshot extends Snapshot
                     "You provided substitution `$key` of type " . getType($value)
                 );
             }
-            $this->substitutions[$this->substitutionPrefix . $key] = (string)$value;
+            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: false);
+            $this->substitutions[$substitutionKey] = (string)$value;
+        }
+    }
+
+    /**
+     * Sets the array of strict substitutions containing keys as the keys and the
+     * replacement as the values.
+     * Strict substitutions are checked using boundaries in the regex.
+     * Eg:
+     * ['user_id' => 99, 'day_of_the_week' => 6]
+     * @param array<string, scalar|object> $strictSubstitutions
+     */
+    public function setStrictSubstitutions(array $strictSubstitutions): void
+    {
+        foreach ($strictSubstitutions as $key => $value) {
+            if (!is_scalar($value) || (is_object($value) && !method_exists($value, '__toString'))) {
+                throw new InvalidArgumentException(
+                    'Strict substitutions can only be string values or values that can be casted to string. ' .
+                    "You provided substitution `$key` of type " . getType($value)
+                );
+            }
+            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: true);
+            $this->strictSubstitutions[$substitutionKey] = (string)$value;
         }
     }
 
     /**
      * Sets an array of regex patterns that will be used to remove lines that matches them
      * both from expected and actual snapshot value.
-     *
      * @param array<string> $patterns
-     * @return void
      */
     public function setIgnoredLinesPatterns(array $patterns): void
     {
@@ -103,9 +111,7 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Allows trailing spaces in snapshots.
-     *
      * @param bool $allowTrailingSpaces
-     * @return void
      */
     public function shouldAllowTrailingSpaces(bool $allowTrailingSpaces = true): void
     {
@@ -119,9 +125,7 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Allows whitespace sequences in snapshots.
-     *
      * @param bool $allowSpaceSequences
-     * @return void
      */
     public function shouldAllowSpaceSequences(bool $allowSpaceSequences = true): void
     {
@@ -140,7 +144,8 @@ abstract class DynamicSnapshot extends Snapshot
     {
         $this->dataSet = $this->removeIgnoredLines($this->dataSet);
         $this->dataSet = $this->cleanContent($this->dataSet);
-        $this->replaceRealValues();
+        $this->replaceRealValuesWithStrictPlaceholders();
+        $this->replaceRealValuesWithPlaceholders();
         parent::save();
     }
 
@@ -150,6 +155,7 @@ abstract class DynamicSnapshot extends Snapshot
     protected function load()
     {
         parent::load();
+        $this->applyStrictSubstitutions();
         $this->applySubstitutions();
     }
 
@@ -165,9 +171,7 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Apply shouldAllowSpaceSequences and shouldAllowTrailingSpaces rules
-     *
      * @param string $data
-     * @return string
      */
     protected function cleanContent(string $data): string
     {
@@ -184,23 +188,31 @@ abstract class DynamicSnapshot extends Snapshot
     }
 
     /**
-     * Replaces values with placeholder keys.
-     *
+     * Replaces placeholders with real values using boundaries.
+     * @see setStrictSubstitutions
+     */
+    protected function applyStrictSubstitutions(): void
+    {
+        foreach ($this->strictSubstitutions as $placeholder => $value) {
+            $placeholder = $this->wrapAndQuote($placeholder);
+            $this->dataSet = preg_replace("/\b$placeholder\b/", $value, $this->dataSet);
+        }
+    }
+
+    /**
+     * Replaces placeholders with real values using boundaries.
      * @see setSubstitutions
-     * @return void
      */
     protected function applySubstitutions(): void
     {
-        foreach ($this->substitutions as $pattern => $replacement) {
-            $pattern = $this->wrapAndQuote($pattern);
-            $this->dataSet = preg_replace("/$pattern/", $replacement, $this->dataSet);
+        foreach ($this->substitutions as $placeholder => $value) {
+            $placeholder = $this->wrapAndQuote($placeholder);
+            $this->dataSet = preg_replace("/$placeholder/", $value, $this->dataSet);
         }
     }
 
     /**
      * Removes ignored lines defined by setIgnoredLinesPatterns.
-     *
-     * @return string
      */
     protected function removeIgnoredLines(string $data): string
     {
@@ -211,21 +223,42 @@ abstract class DynamicSnapshot extends Snapshot
         return $data;
     }
 
+    protected function replaceRealValueWithPlaceholder(
+        string $value,
+        string $placeholder,
+        bool $withBoundaries = false
+    ): void {
+        $value = preg_quote($value, '/');
+        $placeholder = $this->quoteAndWrap($placeholder);
+        $regex = $withBoundaries ? "/\b$value\b/" : "/$value/";
+        $this->dataSet = preg_replace($regex, $placeholder, $this->dataSet);
+    }
+
     /**
-     * Replaces the real values in the snapshot by the keys.
-     *
-     * @return void
+     * Replaces the real values in the snapshot with placeholders using boundaries `\b`.
      */
-    protected function replaceRealValues(): void
+    protected function replaceRealValuesWithStrictPlaceholders(): void
+    {
+        if (count($this->strictSubstitutions) !== count(array_filter($this->strictSubstitutions))) {
+            $this->fail('Error while saving snapshot: one or more strict substitutions is empty.');
+        }
+
+        foreach ($this->strictSubstitutions as $placeholder => $value) {
+            $this->replaceRealValueWithPlaceholder($value, $placeholder, withBoundaries: true);
+        }
+    }
+
+    /**
+     * Replaces the real values in the snapshot with placeholders.
+     */
+    protected function replaceRealValuesWithPlaceholders(): void
     {
         if (count($this->substitutions) !== count(array_filter($this->substitutions))) {
             $this->fail('Error while saving snapshot: one or more substitutions is empty.');
         }
 
-        foreach ($this->substitutions as $pattern => $replacement) {
-            $replacement = preg_quote($replacement, '/');
-            $pattern = $this->quoteAndWrap($pattern);
-            $this->dataSet = preg_replace("/$replacement/", $pattern, $this->dataSet);
+        foreach ($this->substitutions as $placeholder => $value) {
+            $this->replaceRealValueWithPlaceholder($value, $placeholder);
         }
     }
 
@@ -242,12 +275,12 @@ abstract class DynamicSnapshot extends Snapshot
         return $data;
     }
 
-    /**
-     * @return string
-     */
-    protected function getSubstitutionsOutput()
+    protected function getSubstitutionsOutput(): string
     {
         $output = '';
+        if (count($this->substitutions) === 0) {
+            return $output;
+        }
         try {
             $substitutions = [];
             foreach ($this->substitutions as $key => $value) {
@@ -261,8 +294,29 @@ abstract class DynamicSnapshot extends Snapshot
         }
     }
 
+    protected function getStrictSubstitutionsOutput(): string
+    {
+        $output = '';
+        if (count($this->strictSubstitutions) === 0) {
+            return $output;
+        }
+        try {
+            $substitutions = [];
+            foreach ($this->strictSubstitutions as $key => $value) {
+                $substitutionKey = str_replace($this->strictSubstitutionPrefix, '', $key);
+                $substitutions[$substitutionKey] = OutputFormatter::escape($value);
+            }
+            $output = 'Strict substitutions:' . PHP_EOL . print_r($substitutions, true);
+        } catch (Throwable $t) {
+            $output = 'Count not get strict substitutions output. Failed with error: ' . $t->getMessage();
+        } finally {
+            return PHP_EOL . PHP_EOL . $output . PHP_EOL;
+        }
+    }
+
     /**
      * Performs assertion for data sets
+     * @return void
      */
     public function assert()
     {
@@ -271,7 +325,8 @@ abstract class DynamicSnapshot extends Snapshot
         } catch (ExpectationFailedException $exception) {
             if ($this->showDiff) {
                 $substitutionsOutput = $this->getSubstitutionsOutput();
-                $message = $exception->getMessage() . $substitutionsOutput;
+                $strictSubstitutionsOutput = $this->getStrictSubstitutionsOutput();
+                $message = $exception->getMessage() . $substitutionsOutput . $strictSubstitutionsOutput;
                 throw new ExpectationFailedException(
                     $message,
                     $exception->getComparisonFailure(),
