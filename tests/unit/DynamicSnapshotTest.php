@@ -216,6 +216,39 @@ class DynamicSnapshotTest extends Unit
 
     /**
      * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::setStrictSubstitutions
+     * @dataProvider provideInvalidSubstitutions
+     */
+    public function itWillNotAllowUnsupportedStrictSubstitutions(array $substitutions)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Strict substitutions can only be string values or values that can be casted to string. ' .
+            'You provided substitution `element` of type ' . getType($substitutions['element'])
+        );
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $mock->setStrictSubstitutions($substitutions);
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::setStrictSubstitutions
+     * @dataProvider provideValidSubstitutions
+     */
+    public function itWillAllowSupportedStrictSubstitutions(array $substitutions)
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $mock->setStrictSubstitutions($substitutions);
+    }
+
+    /**
+     * @test
      * @covers \Fkupper\Codeception\DynamicSnapshot::getSubstitutionsOutput
      */
     public function itCanGetSubstitutionsOutput()
@@ -237,6 +270,29 @@ class DynamicSnapshotTest extends Unit
         $this->assertSame(
             $expectedOutput,
             $actualOutput
+        );
+    }
+
+    /**
+     * @test
+     * @covers \Fkupper\Codeception\DynamicSnapshot::getSubstitutionKey
+     */
+    public function itCanGetSubstitutionKey()
+    {
+        $mock = Mockery::mock(DynamicSnapshot::class)
+            ->shouldAllowMockingProtectedMethods()
+            ->makePartial();
+
+        $actualKey = $mock->getSubstitutionKey('foo', false);
+        $this->assertSame(
+            'snapshot_foo',
+            $actualKey,
+        );
+
+        $actualStrictKey = $mock->getSubstitutionKey('foo', true);
+        $this->assertSame(
+            'snapshot_strict_foo',
+            $actualStrictKey,
         );
     }
 }
