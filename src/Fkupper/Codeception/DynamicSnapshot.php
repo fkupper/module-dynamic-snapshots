@@ -155,8 +155,7 @@ abstract class DynamicSnapshot extends Snapshot
     protected function load()
     {
         parent::load();
-        $this->applyStrictSubstitutions();
-        $this->applySubstitutions();
+        $this->applyAllSubstitutions();
     }
 
     protected function wrapAndQuote(string $value): string
@@ -189,23 +188,11 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Replaces placeholders with real values using boundaries.
-     * @see setStrictSubstitutions
-     */
-    protected function applyStrictSubstitutions(): void
-    {
-        foreach ($this->strictSubstitutions as $placeholder => $value) {
-            $placeholder = $this->wrapAndQuote($placeholder);
-            $this->dataSet = preg_replace("/\b$placeholder\b/", $value, $this->dataSet);
-        }
-    }
-
-    /**
-     * Replaces placeholders with real values using boundaries.
      * @see setSubstitutions
      */
-    protected function applySubstitutions(): void
+    protected function applyAllSubstitutions(): void
     {
-        foreach ($this->substitutions as $placeholder => $value) {
+        foreach (array_merge($this->substitutions, $this->strictSubstitutions) as $placeholder => $value) {
             $placeholder = $this->wrapAndQuote($placeholder);
             $this->dataSet = preg_replace("/$placeholder/", $value, $this->dataSet);
         }
