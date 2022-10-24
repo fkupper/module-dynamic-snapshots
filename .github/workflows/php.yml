@@ -12,6 +12,7 @@ jobs:
     strategy:
       matrix:
         php: ['8.0', '8.1']
+        codeception: ['4.1', '5.0']
 
     steps:
     - name: checkout
@@ -27,12 +28,14 @@ jobs:
       run: composer validate --strict
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: |
+        composer install --prefer-dist --no-progress
+        composer require "codeception/codeception:${{ matrix.codeception }}" --no-interaction --no-update
 
     - name: Run tests
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.github_token }}
-        COVERALLS_FLAG_NAME: php-${{ matrix.php }}
+        COVERALLS_FLAG_NAME: php-${{ matrix.php }}-codeception-${{ matrix.codeception }}
         COVERALLS_PARALLEL: true
       run: composer check
 
