@@ -28,7 +28,7 @@ abstract class DynamicSnapshot extends Snapshot
 
 
     /**
-     * Set what charaters will be used to wrap substitution keys.
+     * Set what characters will be used to wrap substitution keys.
      * Default is []
      */
     public function setWrappers(string $leftWrapper = '[', string $rightWrapper = ']'): void
@@ -137,10 +137,7 @@ abstract class DynamicSnapshot extends Snapshot
         return $this->allowSpaceSequences;
     }
 
-    /**
-     * @return void
-     */
-    protected function save()
+    protected function save(): void
     {
         $this->dataSet = $this->removeIgnoredLines($this->dataSet);
         $this->dataSet = $this->cleanContent($this->dataSet);
@@ -149,10 +146,7 @@ abstract class DynamicSnapshot extends Snapshot
         parent::save();
     }
 
-    /**
-     * @return void
-     */
-    protected function load()
+    protected function load(): void
     {
         parent::load();
         $this->applyAllSubstitutions();
@@ -170,7 +164,6 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Apply shouldAllowSpaceSequences and shouldAllowTrailingSpaces rules
-     * @param string $data
      */
     protected function cleanContent(string $data): string
     {
@@ -249,7 +242,7 @@ abstract class DynamicSnapshot extends Snapshot
         }
     }
 
-    protected function fetchData()
+    protected function fetchData(): array|string|false
     {
         $data = $this->fetchDynamicData();
         if (!$data) {
@@ -301,11 +294,7 @@ abstract class DynamicSnapshot extends Snapshot
         }
     }
 
-    /**
-     * Performs assertion for data sets
-     * @return void
-     */
-    public function assert()
+    public function assert(): void
     {
         try {
             parent::assert();
@@ -325,8 +314,6 @@ abstract class DynamicSnapshot extends Snapshot
 
     /**
      * Should return dynamic data from current test run
-     *
-     * @return string
      */
-    abstract protected function fetchDynamicData();
+    abstract protected function fetchDynamicData(): string;
 }
