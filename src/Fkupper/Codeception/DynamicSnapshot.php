@@ -139,7 +139,7 @@ abstract class DynamicSnapshot extends Snapshot
 
     protected function save(): void
     {
-        $this->dataSet = $this->removeIgnoredLines($this->dataSet);
+        $this->dataSet = $this->removeIgnoredLines((string)$this->dataSet);
         $this->dataSet = $this->cleanContent($this->dataSet);
         $this->replaceRealValuesWithStrictPlaceholders();
         $this->replaceRealValuesWithPlaceholders();
@@ -187,7 +187,7 @@ abstract class DynamicSnapshot extends Snapshot
     {
         foreach (array_merge($this->substitutions, $this->strictSubstitutions) as $placeholder => $value) {
             $placeholder = $this->wrapAndQuote($placeholder);
-            $this->dataSet = preg_replace("/$placeholder/", $value, $this->dataSet);
+            $this->dataSet = preg_replace("/$placeholder/", $value, (string)$this->dataSet);
         }
     }
 
@@ -211,7 +211,7 @@ abstract class DynamicSnapshot extends Snapshot
         $value = preg_quote($value, '/');
         $placeholder = $this->quoteAndWrap($placeholder);
         $regex = $withBoundaries ? "/\b$value\b/" : "/$value/";
-        $this->dataSet = preg_replace($regex, $placeholder, $this->dataSet);
+        $this->dataSet = preg_replace($regex, $placeholder, (string)$this->dataSet);
     }
 
     /**
