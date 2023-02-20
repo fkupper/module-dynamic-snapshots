@@ -2,7 +2,6 @@
 
 use Codeception\Test\Unit;
 use Fkupper\Codeception\DynamicSnapshot;
-use PHPUnit\Framework\ExpectationFailedException;
 
 class DynamicSnapshotTest extends Unit
 {
