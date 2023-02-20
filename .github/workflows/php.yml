@@ -29,8 +29,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        composer install --prefer-dist --no-progress
-        composer require "codeception/codeception:${{ matrix.codeception }}" --no-interaction --no-update
+        composer require "codeception/codeception:^${{ matrix.codeception }}" --no-interaction --no-update
+        composer update --prefer-dist --no-interaction --no-suggest
 
     - name: Run tests
       env:
