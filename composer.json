@@ -1,6 +1,6 @@
 {
     "name": "fkupper/module-dynamic-snapshots",
-    "description": "Dynamic content shapshot testing for Codeception",
+    "description": "Dynamic content snapshot testing for Codeception",
     "keywords": [
         "codeception",
         "snapshot"
@@ -15,8 +15,8 @@
     ],
     "minimum-stability": "RC",
     "require": {
-        "php": "^8.0",
-        "codeception/codeception": "^4.1"
+        "php": "^8.0.|^8.1|^8.2",
+        "codeception/codeception": "^5.0"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^3.7",
