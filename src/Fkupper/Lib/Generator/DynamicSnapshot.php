@@ -9,11 +9,14 @@ class DynamicSnapshot extends Snapshot
 {
     use Namespaces;
 
-    protected $template = <<<EOF
+    protected string $template = <<<EOF
 <?php
+
 namespace {{namespace}};
 
-class {{name}} extends \\Codeception\\DynamicSnapshot
+use Fkupper\Codeception\DynamicSnapshot;
+
+class {{name}} extends DynamicSnapshot
 {
 
 {{actions}}
@@ -29,7 +32,7 @@ class {{name}} extends \\Codeception\\DynamicSnapshot
 }
 EOF;
 
-    protected $actionsTemplate = <<<EOF
+    protected string $actionsTemplate = <<<EOF
     /**
      * @var \\{{actorClass}};
      */
