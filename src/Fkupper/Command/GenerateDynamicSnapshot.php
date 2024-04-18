@@ -45,7 +45,7 @@ class GenerateDynamicSnapshot extends Command implements CustomCommandInterface
         return 'Generates empty DynamicSnapshot class';
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+    public function execute(InputInterface $input, OutputInterface $output): int
     {
         $suite = (string)$input->getArgument('suite');
         $class = (string)$input->getArgument('dynamicsnapshot');
