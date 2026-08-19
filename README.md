@@ -10,6 +10,8 @@ This is a module that can be used together with [Codeception](https://github.com
 
 # Installation
 
+Requires PHP 8.4+ and Codeception 5.3.5+.
+
 Using composer:
 ``` shell
 composer require "fkupper/module-dynamic-snapshots"
