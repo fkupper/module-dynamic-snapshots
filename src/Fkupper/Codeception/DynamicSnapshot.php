@@ -5,6 +5,7 @@ namespace Fkupper\Codeception;
 use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use InvalidArgumentException;
+use Override;
 use PHPUnit\Framework\ExpectationFailedException;
 use Symfony\Component\Console\Formatter\OutputFormatter;
 use Throwable;
@@ -23,7 +24,7 @@ abstract class DynamicSnapshot extends Snapshot
     protected array $substitutions = [];
     /** @var array<string,string> */
     protected array $strictSubstitutions = [];
-    /** @var array<string> */
+    /** @var array<non-empty-string> */
     protected array $ignoredLinesPatters = [];
 
 
@@ -56,6 +57,22 @@ abstract class DynamicSnapshot extends Snapshot
         return ($strictSubstitutions ? $this->strictSubstitutionPrefix : $this->substitutionPrefix) . $key;
     }
 
+    private function stringifySubstitution(string $key, mixed $value, bool $strict = false): string
+    {
+        if (is_scalar($value)) {
+            return (string)$value;
+        }
+        if (is_object($value) && method_exists($value, '__toString')) {
+            return (string)$value;
+        }
+
+        $kind = $strict ? 'Strict substitutions' : 'Substitutions';
+        throw new InvalidArgumentException(
+            $kind . ' can only be string values or values that can be casted to string. ' .
+            "You provided substitution `$key` of type " . getType($value)
+        );
+    }
+
     /**
      * Sets the array of substitutions containing keys as the keys and the
      * replacement as the values.
@@ -66,14 +83,8 @@ abstract class DynamicSnapshot extends Snapshot
     public function setSubstitutions(array $substitutions): void
     {
         foreach ($substitutions as $key => $value) {
-            if (!is_scalar($value) || (is_object($value) && !method_exists($value, '__toString'))) {
-                throw new InvalidArgumentException(
-                    'Substitutions can only be string values or values that can be casted to string. ' .
-                    "You provided substitution `$key` of type " . getType($value)
-                );
-            }
-            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: false);
-            $this->substitutions[$substitutionKey] = (string)$value;
+            $this->substitutions[$this->getSubstitutionKey($key, strictSubstitutions: false)]
+                = $this->stringifySubstitution($key, $value);
         }
     }
 
@@ -88,21 +99,15 @@ abstract class DynamicSnapshot extends Snapshot
     public function setStrictSubstitutions(array $strictSubstitutions): void
     {
         foreach ($strictSubstitutions as $key => $value) {
-            if (!is_scalar($value) || (is_object($value) && !method_exists($value, '__toString'))) {
-                throw new InvalidArgumentException(
-                    'Strict substitutions can only be string values or values that can be casted to string. ' .
-                    "You provided substitution `$key` of type " . getType($value)
-                );
-            }
-            $substitutionKey = $this->getSubstitutionKey($key, strictSubstitutions: true);
-            $this->strictSubstitutions[$substitutionKey] = (string)$value;
+            $this->strictSubstitutions[$this->getSubstitutionKey($key, strictSubstitutions: true)]
+                = $this->stringifySubstitution($key, $value, strict: true);
         }
     }
 
     /**
      * Sets an array of regex patterns that will be used to remove lines that matches them
      * both from expected and actual snapshot value.
-     * @param array<string> $patterns
+     * @param array<non-empty-string> $patterns
      */
     public function setIgnoredLinesPatterns(array $patterns): void
     {
@@ -137,6 +142,7 @@ abstract class DynamicSnapshot extends Snapshot
         return $this->allowSpaceSequences;
     }
 
+    #[Override]
     protected function save(): void
     {
         $this->dataSet = $this->removeIgnoredLines((string)$this->dataSet);
@@ -146,6 +152,7 @@ abstract class DynamicSnapshot extends Snapshot
         parent::save();
     }
 
+    #[Override]
     protected function load(): void
     {
         parent::load();
@@ -169,11 +176,11 @@ abstract class DynamicSnapshot extends Snapshot
     {
         if (!$this->getAllowSpaceSequences()) {
             // clean consecutive whitespaces
-            $data = preg_replace('/(\s+(?=\s))/m', '', $data);
+            $data = preg_replace('/(\s+(?=\s))/m', '', $data) ?? $data;
         }
         if (!$this->getAllowTrailingSpaces()) {
             // clean trailing spaces
-            $data = preg_replace('/(^\s+|\s+$)/m', '', $data);
+            $data = preg_replace('/(^\s+|\s+$)/m', '', $data) ?? $data;
         }
 
         return $data;
@@ -187,7 +194,7 @@ abstract class DynamicSnapshot extends Snapshot
     {
         foreach (array_merge($this->substitutions, $this->strictSubstitutions) as $placeholder => $value) {
             $placeholder = $this->wrapAndQuote($placeholder);
-            $this->dataSet = preg_replace("/$placeholder/", $value, (string)$this->dataSet);
+            $this->dataSet = preg_replace("/$placeholder/", $value, (string)$this->dataSet) ?? (string)$this->dataSet;
         }
     }
 
@@ -197,7 +204,7 @@ abstract class DynamicSnapshot extends Snapshot
     protected function removeIgnoredLines(string $data): string
     {
         foreach ($this->ignoredLinesPatters as $pattern) {
-            $data = preg_replace($pattern, '', $data);
+            $data = preg_replace($pattern, '', $data) ?? $data;
         }
 
         return $data;
@@ -211,7 +218,7 @@ abstract class DynamicSnapshot extends Snapshot
         $value = preg_quote($value, '/');
         $placeholder = $this->quoteAndWrap($placeholder);
         $regex = $withBoundaries ? "/\b$value\b/" : "/$value/";
-        $this->dataSet = preg_replace($regex, $placeholder, (string)$this->dataSet);
+        $this->dataSet = preg_replace($regex, $placeholder, (string)$this->dataSet) ?? (string)$this->dataSet;
     }
 
     /**
@@ -242,6 +249,7 @@ abstract class DynamicSnapshot extends Snapshot
         }
     }
 
+    #[Override]
     protected function fetchData(): array|string|false
     {
         $data = $this->fetchDynamicData();
@@ -294,6 +302,7 @@ abstract class DynamicSnapshot extends Snapshot
         }
     }
 
+    #[Override]
     public function assert(): void
     {
         try {
